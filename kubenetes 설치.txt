@@ -1,0 +1,27 @@
+#모든 노드에 root로 실행
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+cat <<EOF > /etc/apt/sources.list.d/kubernetes.list
+deb http://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+
+#모든 노드에 실행
+apt install docker-ce -y
+
+#쿠버네티스 페키지 설치
+apt-get install -y kubelet=1.23.0-00 kubeadm kubectl kubernetes-cni
+version 변경시
+apt-mark unhold kubeadm && apt-get update && apt-get install -y kubeadm=1.23.0-00 && apt-mark hold kubeadm
+
+#MASTER NODE
+kubeadm init --apiserver-advertise-address 192.168.0.45 --pod-network-cidr=172.31.0.0/16
+
+
+Kubenetes 삭제시
+apt-get purge kubeadm kubectl kubelet kubernetes-cni kube*  -y
+rm -rf ~/.kube
+
+
+#네트워크 설정
+kubectl apply -f https://docs.projectcalico.org/v3.8/manifests/calico.yaml
+#삭제
+kubectl delete -f calico.yaml
